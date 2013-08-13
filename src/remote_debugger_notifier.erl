@@ -3,18 +3,22 @@
 -include("process_names.hrl").
 -include("remote_debugger_messages.hrl").
 
--export([run/1]).
+-export([run/1, breakpoint_reached/1]).
 
 run(Debugger) ->
   register(?RDEBUG_NOTIFIER, self()),
+  attach_process(),
   loop(Debugger).
 
 loop(Debugger) ->
   receive
     MessageToSend ->
-      Debugger ! to_remote_message(MessageToSend)
+      Debugger ! MessageToSend
   end,
   loop(Debugger).
 
-to_remote_message(Message) ->
-  #unknown_message{msg = Message}.
+attach_process() ->
+  int:auto_attach([break], {?MODULE, breakpoint_reached, []}).
+
+breakpoint_reached(Pid) ->
+  ?RDEBUG_NOTIFIER ! #breakpoint_reached{pid = Pid, snapshot = int:snapshot()}.
