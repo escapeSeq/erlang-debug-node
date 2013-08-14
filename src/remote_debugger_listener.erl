@@ -26,6 +26,14 @@ loop() ->
                                                 is_atom(Function),
                                                 is_list(Args) ->
       run_debugger(Module, Function, Args);
+    {step_into, Pid} when is_pid(Pid) ->
+      step_into(Pid);
+    {step_over, Pid} when is_pid(Pid) ->
+      step_over(Pid);
+    {step_out, Pid} when is_pid(Pid) ->
+      step_out(Pid);
+    {continue, Pid} when is_pid(Pid) ->
+      continue(Pid);
     UnknownMessage ->
       io:format("unknown message: ~p", [UnknownMessage])
   end,
@@ -56,3 +64,15 @@ interpret_module(Module) ->
 run_debugger(Module, Function, _Args) ->
   %%FIXME provide args (also make sure to handle the case of nullary fun)
   spawn_link(Module, Function, [1]).
+
+step_into(Pid) ->
+  int:step(Pid).
+
+step_over(Pid) ->
+  int:next(Pid).
+
+step_out(Pid) ->
+  int:finish(Pid).
+
+continue(Pid) ->
+  int:continue(Pid).
