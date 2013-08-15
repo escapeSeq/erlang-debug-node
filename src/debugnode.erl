@@ -1,6 +1,6 @@
 -module(debugnode).
 
--export([main/1, mytestfunc/1]).
+-export([main/1]).
 
 main([TargetNodeName, TargetProcessName]) ->
   main(TargetNodeName, TargetProcessName).
@@ -11,32 +11,20 @@ main(TargetNodeName, TargetProcessName) ->
       io:format("Should be launched in node runtime system.~n"),
       exit(1);
     _ ->
+      %%TODO check if node name contains host part
       run({list_to_atom(TargetProcessName), list_to_atom(TargetNodeName ++ [$@|net_adm:localhost()])})
   end.
 
 run(Debugger) ->
-  %%TODO link processes
-  spawn(remote_debugger_notifier, run, [Debugger]),
-  spawn(remote_debugger_listener, run, [Debugger]).
+  process_flag(trap_exit, true),
+  spawn_opt(remote_debugger_notifier, run, [Debugger], [monitor, link]),
+  spawn_opt(remote_debugger_listener, run, [Debugger], [monitor, link]),
+  wait_for_exit().
 
-
-%TODO remove these functions
-mytestfunc(_) ->
-  One = 1,
-  io:format("one~n"),
-  io:format("two~n"),
-  io:format("three~n"),
-  boo(),
-  io:format("boo").
-
-boo() ->
-  Two = 2,
-  io:format("four~n"),
-  io:format("five~n"),
-  io:format("six~n"),
-  foo(),
-  io:format("foo").
-
-foo() ->
-  Three = 3,
-  io:format("seven~n").
+wait_for_exit() ->
+  receive
+    {'EXIT', _, _} -> ok;
+    {'DOWN', _, _, _, _} -> ok;
+    _ ->
+      wait_for_exit()
+  end.

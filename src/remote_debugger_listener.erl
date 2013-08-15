@@ -34,6 +34,7 @@ loop() ->
       step_out(Pid);
     {continue, Pid} when is_pid(Pid) ->
       continue(Pid);
+    {'DOWN', _, _, _, _} -> exit(normal); % this means the process being debugged has quit
     UnknownMessage ->
       io:format("unknown message: ~p", [UnknownMessage])
   end,
@@ -60,10 +61,10 @@ interpret_module(Module) ->
     error -> {Module, int:interpretable(Module)}
   end.
 
-%%TODO make sure it's linked appropriately
+%%TODO handle all processes which are being debugged, not only the spawned one.
 run_debugger(Module, Function, _Args) ->
   %%FIXME provide args (also make sure to handle the case of nullary fun)
-  spawn_link(Module, Function, [1]).
+  spawn_opt(Module, Function, [1], [monitor, link]).
 
 step_into(Pid) ->
   int:step(Pid).
