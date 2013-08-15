@@ -2,7 +2,10 @@
 -module(testmodule).
 
 
--export([mytestfunc/1]).
+-export([mytestfunc/1, print_args/1]).
+
+print_args(Args) ->
+  io:format("~p~n", [Args]).
 
 mytestfunc(_) ->
   One = 1,

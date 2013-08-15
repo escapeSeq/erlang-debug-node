@@ -62,9 +62,14 @@ interpret_module(Module) ->
   end.
 
 %%TODO handle all processes which are being debugged, not only the spawned one.
-run_debugger(Module, Function, _Args) ->
-  %%FIXME provide args (also make sure to handle the case of nullary fun)
-  spawn_opt(Module, Function, [1], [monitor, link]).
+run_debugger(Module, Function, ArgsString) ->
+  case parse_args(ArgsString) of
+    error ->
+      %%TODO report error
+      exit(normal);
+    ArgsList ->
+      spawn_opt(Module, Function, ArgsList, [monitor, link])
+  end.
 
 step_into(Pid) ->
   int:step(Pid).
@@ -77,3 +82,16 @@ step_out(Pid) ->
 
 continue(Pid) ->
   int:continue(Pid).
+
+parse_args(ArgsString) ->
+  case erl_scan:string(ArgsString ++ ".") of
+    {ok, Tokens, _} ->
+      case erl_parse:parse_term(Tokens) of
+        {ok, ArgsList} when is_list(ArgsList) ->
+          ArgsList;
+        _ ->
+          error
+      end;
+    _ ->
+      error
+  end.
