@@ -1,6 +1,7 @@
 %TODO remove this module
 -module(testmodule).
 
+-include_lib("eunit/include/eunit.hrl").
 
 -export([mytestfunc/1, print_args/1]).
 
@@ -26,3 +27,10 @@ boo() ->
 foo() ->
   Three = 3,
   io:format("seven~n").
+
+foo_test() ->
+  io:format("in foo_test~n"),
+  A = 42,
+  B = 21,
+  C = B * 2,
+  ?assertEqual(A, C).
