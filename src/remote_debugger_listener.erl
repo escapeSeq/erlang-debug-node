@@ -14,6 +14,9 @@ run(Debugger) ->
 
 loop() ->
   receive
+
+    % commands from remote debugger
+
     {set_breakpoint, Module, Line} when is_atom(Module),
                                         is_integer(Line) ->
       set_breakpoint(Module, Line);
@@ -34,6 +37,17 @@ loop() ->
       step_out(Pid);
     {continue, Pid} when is_pid(Pid) ->
       continue(Pid);
+    {evaluate, Pid, Expression} when is_pid(Pid),
+                                     is_list(Expression) ->
+      evaluate(Pid, Expression);
+
+    % responses from interpreter
+
+    {_Meta, {eval_rsp, EvalResponse}} ->
+      evaluate_response(EvalResponse);
+
+    % other
+
     {'DOWN', _, _, _, _} -> exit(normal); % this means the process being debugged has quit
     UnknownMessage ->
       io:format("unknown message: ~p", [UnknownMessage])
@@ -83,11 +97,18 @@ step_out(Pid) ->
 continue(Pid) ->
   int:continue(Pid).
 
+evaluate(Pid, Expression) ->
+  {ok, Meta} = dbg_iserver:call({get_meta, Pid}),
+  int:meta(Meta, eval, {undefined, Expression}). % Current module should be passed instead of 'undefined'
+
+evaluate_response(Response) ->
+  ?RDEBUG_NOTIFIER ! #evaluate_response{result = Response}.
+
 parse_args(ArgsString) ->
   case erl_scan:string(ArgsString ++ ".") of
     {ok, Tokens, _} ->
       case erl_parse:parse_exprs(Tokens) of
-        {ok, ExprList}  ->
+        {ok, ExprList} ->
           eval_argslist(ExprList);
         _ ->
           error
