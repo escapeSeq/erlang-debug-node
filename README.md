@@ -1,4 +1,6 @@
 erlang-debug-node
 =================
 
-Erlang node which can be used to develop external debugger.
+Erlang part of a debugger for the <a href="https://github.com/ignatov/intellij-erlang">Erlang Plugin for IntelliJ IDEA</a>.
+
+This application is used to run debugged processes as well as to connect to remote nodes for debugging.
