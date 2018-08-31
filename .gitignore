@@ -1,5 +1,7 @@
 .eunit
+.idea
 deps
 *.o
 *.beam
 *.plt
+*.iml
