@@ -9,7 +9,6 @@ print_args(Args) ->
   io:format("~p~n", [Args]).
 
 mytestfunc(_) ->
-  One = 1,
   io:format("one~n"),
   io:format("two~n"),
   io:format("three~n"),
@@ -17,7 +16,6 @@ mytestfunc(_) ->
   io:format("boo").
 
 boo() ->
-  Two = 2,
   io:format("four~n"),
   io:format("five~n"),
   io:format("six~n"),
@@ -25,7 +23,6 @@ boo() ->
   io:format("foo").
 
 foo() ->
-  Three = 3,
   io:format("seven~n").
 
 foo_test() ->
